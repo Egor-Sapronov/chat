@@ -35,27 +35,39 @@ module.exports = (function () {
 
 	function getOnlineUsers() {
 		return new Promise(function (resolve, reject) {
-			let usersList = new Map();
+			let usersList = [];
 
-			onlineUsers.forEach(function (id) {
-				usersList.set(id, users.get(id));
+			onlineUsers.forEach(function (userId) {
+				let item = users.get(userId);
+				usersList.push({
+					id: item.id,
+					username: item.username
+				});
 			});
 
 			return resolve(usersList);
 		});
 	}
 
-	function login(userId) {
+	function login(username) {
 		return new Promise(function (resolve, reject) {
-			if (!users.has(userId)) {
+			let user;
+
+			users.forEach(function (item) {
+				if (item.username === username) {
+					user = item;
+				}
+			});
+
+			if (!user) {
 				return reject('Not registered user');
 			}
 
-			onlineUsers.add(userId);
+			onlineUsers.add(user.id);
 
-			this.emit(constants.USER_LOGIN, users.get(userId));
+			this.emit(constants.USER_LOGIN, user);
 
-			return resolve(users.get(userId));
+			return resolve(user);
 		}.bind(this));
 	}
 
@@ -74,6 +86,11 @@ module.exports = (function () {
 
 	function registerUser(username) {
 		return new Promise(function (resolve, reject) {
+
+			if (!username || 0 === username.length) {
+				return reject('Username is empty');
+			}
+
 			users.forEach(function (user) {
 				if (user.username === username) {
 					return reject('username already exist');
@@ -92,7 +109,18 @@ module.exports = (function () {
 
 	function getMessages() {
 		return new Promise(function (resolve, reject) {
-			return resolve(messages);
+			let items = [];
+
+			messages.forEach(function (message) {
+				items.push({
+					id: message.id,
+					content: message.content,
+					date: message.createdAt,
+					user: users.get(message.userId)
+				});
+			});
+
+			return resolve(items);
 		});
 	}
 
@@ -104,16 +132,13 @@ module.exports = (function () {
 
 	function pushMessage(options) {
 		return new Promise(function (resolve, reject) {
-			if (!users.has(options.userId)) {
-				return reject('userId not found');
-			}
-
 			let message = Message.create({
 				userId: options.userId,
 				content: options.content
 			});
 
 			messages.set(message.id, message);
+			message.user = users.get(options.userId);
 
 			this.emit(constants.MESSAGE_PUSH, message);
 

@@ -27,7 +27,7 @@ describe('Chat app', function () {
 			return chat
 				.registerUser('user')
 				.then(function (user) {
-					return chat.login(user.id);
+					return chat.login(user.username);
 				})
 				.then(function (user) {
 					expect(user).to.be.ok;
@@ -46,7 +46,7 @@ describe('Chat app', function () {
 			chat
 				.registerUser('user')
 				.then(function (user) {
-					return chat.login(user.id);
+					return chat.login(user.username);
 				});
 		});
 
@@ -64,12 +64,11 @@ describe('Chat app', function () {
 			expect(chat.getMessages).to.be.ok;
 		});
 
-		it('Should return empty map if any users is not exists', function (done) {
+		it('Should return empty array if any users is not exists', function (done) {
 			return chat
 				.getMessages()
 				.then(function (messages) {
-					expect(Map.prototype.isPrototypeOf(messages)).to.be.ok;
-					expect(messages.size).to.be.equal(0);
+					expect(messages.length).to.be.equal(0);
 					return done();
 				});
 		});
@@ -87,9 +86,7 @@ describe('Chat app', function () {
 					return chat.getMessages();
 				})
 				.then(function (messages) {
-					expect(Map.prototype.isPrototypeOf(messages)).to.be.ok;
-					expect(messages.size).to.be.equal(1);
-
+					expect(messages.length).to.be.equal(1);
 					return done();
 				});
 		});
@@ -127,18 +124,6 @@ describe('Chat app', function () {
 	describe('#pushMessage', function () {
 		it('Should exist', function () {
 			expect(chat.pushMessage).to.be.ok;
-		});
-
-		it('Should reject if user is not exist', function (done) {
-			return chat
-				.pushMessage({
-					userId: 1,
-					content: 'text'
-				})
-				.catch(function (reason) {
-					expect(reason).to.be.ok;
-					return done();
-				});
 		});
 
 		it('Should fire on new message', function (done) {
