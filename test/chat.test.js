@@ -4,16 +4,52 @@ let expect = require('chai').expect;
 let chat = require('../server/libs/chat');
 let User = require('../server/models/model').User;
 let Message = require('../server/models/model').Message;
+let EventEmitter = require('eventemitter2').EventEmitter2;
+let constants = require('../server/libs/constants');
 
 describe('Chat app', function () {
 
 	beforeEach(function (done) {
 		return chat
-			.clear()
+			.clearChat()
 			.then(function (result) {
 				expect(result).to.be.ok;
 				return done();
 			});
+	});
+
+	describe('#events', function () {
+		describe('USER_REGISTER', function () {
+			it('Should fire on new user create', function (done) {
+
+				chat.once(constants.USER_REGISTER, function (user) {
+					expect(user).to.be.ok;
+					expect(User.isUser(user)).to.be.ok;
+					return done();
+				});
+
+				chat.registerUser('user');
+			});
+		});
+
+		describe('MESSAGE_PUSH', function () {
+			it('Should fire on new message', function (done) {
+				chat.once(constants.MESSAGE_PUSH, function (message) {
+					expect(message).to.be.ok;
+					expect(Message.isMessage(message)).to.be.ok;
+					return done();
+				});
+
+				return chat
+					.registerUser('user')
+					.then(function (user) {
+						return chat.pushMessage({
+							userId: user.id,
+							content: 'text'
+						});
+					});
+			});
+		});
 	});
 
 	describe('#getMessages', function () {

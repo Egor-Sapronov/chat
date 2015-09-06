@@ -19,8 +19,10 @@
   "homepage": "https://github.com/Egor-Sapronov/chat#readme",
   "dependencies": {
     "body-parser": "^1.13.3",
+    "eventemitter2": "^0.4.14",
     "express": "^4.13.3",
     "jade": "^1.11.0",
+    "keymirror": "^0.1.1",
     "method-override": "^2.3.5",
     "object-assign": "^4.0.1"
   },
