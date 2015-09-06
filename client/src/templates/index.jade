@@ -7,5 +7,25 @@ html.no-js
     meta(name='description', content='')
     meta(name='viewport', content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='/static/index.css')
-    script(src='/static/index.js')
   body
+  
+    #signup_contanier
+      input#signup_input(type='text', placeholder='username')
+      button#signup_button Signup
+      a(href='#signin') signin
+      
+    #chat_container(style='display:none')
+      p Messages
+      ul#messages_container
+      textarea#message_input
+      button#message_button Send
+      p Online users
+      ul#users_container
+    
+    #login_container(style='display:none')
+      input#login_input(type='text', placeholder='username')
+      button#login_button Login
+      a(href='#signup') signup
+  
+    script(src='https://cdn.socket.io/socket.io-1.1.0.js')
+    script(src='/static/index.js')
