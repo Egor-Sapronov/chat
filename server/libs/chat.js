@@ -9,12 +9,17 @@ let constants = require('./constants');
 module.exports = (function () {
 	let users = new Map();
 	let messages = new Map();
+	let onlineUsers = new Set();
+
 	let chat = {
 		registerUser: registerUser,
 		getMessages: getMessages,
 		getUsers: getUsers,
 		pushMessage: pushMessage,
-		clearChat: clear
+		login: login,
+		logout: logout,
+		clearChat: clear,
+		getOnlineUsers: getOnlineUsers
 	};
 
 	let chatInstance = objectAssign(EventEmitter.prototype, chat);
@@ -23,8 +28,48 @@ module.exports = (function () {
 		return new Promise(function (resolve, reject) {
 			users = new Map();
 			messages = new Map();
+			onlineUsers = new Set();
 			resolve(true);
 		});
+	}
+
+	function getOnlineUsers() {
+		return new Promise(function (resolve, reject) {
+			let usersList = new Map();
+
+			onlineUsers.forEach(function (id) {
+				usersList.set(id, users.get(id));
+			});
+
+			return resolve(usersList);
+		});
+	}
+
+	function login(userId) {
+		return new Promise(function (resolve, reject) {
+			if (!users.has(userId)) {
+				return reject('Not registered user');
+			}
+
+			onlineUsers.add(userId);
+
+			this.emit(constants.USER_LOGIN, users.get(userId));
+
+			return resolve(users.get(userId));
+		}.bind(this));
+	}
+
+	function logout(user) {
+		return new Promise(function (resolve, reject) {
+			if (!users.has(user.id)) {
+				return reject('Not registered user');
+			}
+
+			onlineUsers.delete(user.id)
+
+			this.emit(constants.USER_LOGOUT, user);
+			return resolve(user);
+		}.bind(this));
 	}
 
 	function registerUser(username) {

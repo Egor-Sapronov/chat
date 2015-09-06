@@ -18,37 +18,44 @@ describe('Chat app', function () {
 			});
 	});
 
-	describe('#events', function () {
-		describe('USER_REGISTER', function () {
-			it('Should fire on new user create', function (done) {
+	describe('#login', function () {
+		it('Should exist', function () {
+			expect(chat.login).to.be.ok;
+		});
 
-				chat.once(constants.USER_REGISTER, function (user) {
+		it('Should login existing user', function (done) {
+			return chat
+				.registerUser('user')
+				.then(function (user) {
+					return chat.login(user.id);
+				})
+				.then(function (user) {
 					expect(user).to.be.ok;
 					expect(User.isUser(user)).to.be.ok;
 					return done();
 				});
-
-				chat.registerUser('user');
-			});
 		});
 
-		describe('MESSAGE_PUSH', function () {
-			it('Should fire on new message', function (done) {
-				chat.once(constants.MESSAGE_PUSH, function (message) {
-					expect(message).to.be.ok;
-					expect(Message.isMessage(message)).to.be.ok;
+		it('Should fire event on login', function (done) {
+			chat.once(constants.USER_LOGIN, function (user) {
+				expect(user).to.be.ok;
+				expect(User.isUser(user)).to.be.ok;
+				return done();
+			});
+
+			chat
+				.registerUser('user')
+				.then(function (user) {
+					return chat.login(user.id);
+				});
+		});
+
+		it('Should reject if user is not exist', function (done) {
+			return chat.login(2)
+				.catch(function (reason) {
+					expect(reason).to.be.ok;
 					return done();
 				});
-
-				return chat
-					.registerUser('user')
-					.then(function (user) {
-						return chat.pushMessage({
-							userId: user.id,
-							content: 'text'
-						});
-					});
-			});
 		});
 	});
 
@@ -134,6 +141,23 @@ describe('Chat app', function () {
 				});
 		});
 
+		it('Should fire on new message', function (done) {
+			chat.once(constants.MESSAGE_PUSH, function (message) {
+				expect(message).to.be.ok;
+				expect(Message.isMessage(message)).to.be.ok;
+				return done();
+			});
+
+			return chat
+				.registerUser('user')
+				.then(function (user) {
+					return chat.pushMessage({
+						userId: user.id,
+						content: 'text'
+					});
+				});
+		});
+
 		it('Should push new message to chat', function (done) {
 			return chat
 				.registerUser('user')
@@ -164,6 +188,17 @@ describe('Chat app', function () {
 					expect(User.isUser(user)).to.be.ok;
 					return done();
 				});
+		});
+
+		it('Should fire on new user create', function (done) {
+
+			chat.once(constants.USER_REGISTER, function (user) {
+				expect(user).to.be.ok;
+				expect(User.isUser(user)).to.be.ok;
+				return done();
+			});
+
+			chat.registerUser('user');
 		});
 
 		it('Should reject if username is exist', function (done) {
